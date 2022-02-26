@@ -21,6 +21,7 @@ from streamlink.stream.http import HTTPStream
 from streamlink.stream.segmented import SegmentedStreamReader, SegmentedStreamWorker, SegmentedStreamWriter
 from streamlink.utils.cache import LRUCache
 from streamlink.utils.formatter import Formatter
+from streamlink.plugins.twitch import low_latency
 
 log = logging.getLogger(__name__)
 
@@ -337,6 +338,10 @@ class HLSStreamWorker(SegmentedStreamWorker):
 
         if self.playlist_sequence < 0:
             if self.playlist_end is None and not self.hls_live_restart:
+                edge_index = -(min(len(sequences), max(int(self.live_edge), 1)))
+                edge_sequence = sequences[edge_index]
+                self.playlist_sequence = edge_sequence.num
+            else if streamlink.plugins.twitch.low_latency:
                 edge_index = -(min(len(sequences), max(int(self.live_edge), 1)))
                 edge_sequence = sequences[edge_index]
                 self.playlist_sequence = edge_sequence.num
